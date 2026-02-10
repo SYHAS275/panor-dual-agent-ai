@@ -12,6 +12,23 @@ A production-ready web application that analyzes documents using both Google Gem
 - **Secure**: File size limits, type validation, and automatic cleanup
 - **Production-Ready**: Error handling, logging, and best practices
 
+## Screenshots
+
+### Login Page
+![Login Page](screenshots/homepage.png)
+
+### Face Detection
+![Face Detection](screenshots/face-detection.png)
+
+### Object Detection
+![Object Detection](screenshots/object-detection.png)
+
+### Live Streaming
+![Live Streaming](screenshots/live-streaming.png)
+
+### Face Descriptor Generator
+![Face Descriptor Generator](screenshots/generate-descriptors.png)
+
 ## Tech Stack
 
 ### Frontend
