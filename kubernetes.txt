@@ -1,0 +1,282 @@
+===============================================================================
+                   PANOR.AI - Kubernetes Deployment Guide
+                        (Free / Local Options)
+===============================================================================
+
+
+========================================
+ OPTION A: MINIKUBE (Local - Completely Free)
+========================================
+
+Minikube runs a single-node Kubernetes cluster on your local machine.
+
+PREREQUISITES:
+  1. Docker Desktop        - https://docs.docker.com/get-docker/
+  2. kubectl               - https://kubernetes.io/docs/tasks/tools/
+  3. Minikube              - https://minikube.sigs.k8s.io/docs/start/
+
+INSTALL MINIKUBE (Windows):
+  - Open PowerShell as Admin:
+      winget install Kubernetes.minikube
+  - Or download from: https://minikube.sigs.k8s.io/docs/start/
+
+INSTALL KUBECTL (Windows):
+  - Open PowerShell as Admin:
+      winget install Kubernetes.kubectl
+  - Or download from: https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/
+
+STEPS:
+
+  Step 1: Start Minikube
+  ----------------------
+    minikube start --driver=docker --memory=4096 --cpus=2
+
+    (Uses Docker as the VM driver. Allocates 4GB RAM and 2 CPUs.)
+
+  Step 2: Point Docker to Minikube's Docker daemon
+  -------------------------------------------------
+    ** This is important so Minikube can see locally-built images **
+
+    PowerShell:
+      & minikube -p minikube docker-env --shell powershell | Invoke-Expression
+
+    CMD:
+      @FOR /f "tokens=*" %i IN ('minikube -p minikube docker-env --shell cmd') DO @%i
+
+    Bash/Git Bash:
+      eval $(minikube docker-env)
+
+  Step 3: Build the Docker image inside Minikube
+  -----------------------------------------------
+    docker build -t panorai:latest .
+
+    (Run this from the project root folder where the Dockerfile is.)
+
+  Step 4: Edit your API keys in k8s/secret.yaml
+  -----------------------------------------------
+    Open k8s/secret.yaml and replace the placeholder values:
+      GEMINI_API_KEY: "your-actual-gemini-key"
+      OPENAI_API_KEY: "your-actual-openai-key"
+
+    IMPORTANT: Never commit real API keys to git!
+
+  Step 5: Deploy to Kubernetes
+  ----------------------------
+    kubectl apply -f k8s/namespace.yaml
+    kubectl apply -f k8s/secret.yaml
+    kubectl apply -f k8s/deployment.yaml
+    kubectl apply -f k8s/service.yaml
+
+  Step 6: Check deployment status
+  --------------------------------
+    kubectl get pods -n panorai
+    kubectl get svc -n panorai
+
+    Wait until the pod STATUS shows "Running":
+      kubectl wait --for=condition=ready pod -l app=panorai -n panorai --timeout=120s
+
+  Step 7: Access the app
+  -----------------------
+    minikube service panorai-service -n panorai
+
+    This opens your browser to the app automatically.
+    If it doesn't, run:
+      minikube service panorai-service -n panorai --url
+    and open the printed URL in your browser.
+
+  USEFUL COMMANDS:
+    View logs:          kubectl logs -f -n panorai -l app=panorai
+    Restart deployment: kubectl rollout restart deployment/panorai-app -n panorai
+    Delete everything:  kubectl delete namespace panorai
+    Stop Minikube:      minikube stop
+    Delete Minikube:    minikube delete
+
+
+========================================
+ OPTION B: DOCKER DESKTOP KUBERNETES (Local - Free)
+========================================
+
+Docker Desktop has a built-in single-node Kubernetes cluster.
+
+STEPS:
+
+  Step 1: Enable Kubernetes in Docker Desktop
+  --------------------------------------------
+    - Open Docker Desktop
+    - Go to Settings > Kubernetes
+    - Check "Enable Kubernetes"
+    - Click "Apply & Restart"
+    - Wait for the Kubernetes status indicator to turn green
+
+  Step 2: Verify kubectl is pointing to Docker Desktop
+  ----------------------------------------------------
+    kubectl config current-context
+
+    It should say "docker-desktop". If not:
+      kubectl config use-context docker-desktop
+
+  Step 3: Build the Docker image
+  -------------------------------
+    docker build -t panorai:latest .
+
+  Step 4: Edit API keys in k8s/secret.yaml
+  ------------------------------------------
+    Replace placeholder values with your real keys.
+
+  Step 5: Deploy
+  ---------------
+    kubectl apply -f k8s/namespace.yaml
+    kubectl apply -f k8s/secret.yaml
+    kubectl apply -f k8s/deployment.yaml
+    kubectl apply -f k8s/service.yaml
+
+  Step 6: Access the app
+  -----------------------
+    kubectl get svc -n panorai
+
+    Look for the EXTERNAL-IP column. With Docker Desktop it will show
+    "localhost". Open your browser to:
+      http://localhost:80
+
+    If EXTERNAL-IP shows <pending>, use port-forward instead:
+      kubectl port-forward svc/panorai-service 3000:80 -n panorai
+    Then open: http://localhost:3000
+
+
+========================================
+ OPTION C: ORACLE CLOUD (OKE) - Always Free Tier
+========================================
+
+Oracle Cloud offers a free Kubernetes cluster with up to 4 ARM-based
+Ampere A1 compute instances (24GB RAM, 4 OCPUs total - always free).
+
+STEPS:
+
+  Step 1: Create Oracle Cloud account
+  ------------------------------------
+    https://www.oracle.com/cloud/free/
+    (No credit card required for Always Free tier)
+
+  Step 2: Create a Kubernetes Cluster (OKE)
+  ------------------------------------------
+    - Go to Oracle Cloud Console
+    - Navigate: Developer Services > Kubernetes Clusters (OKE)
+    - Click "Create Cluster"
+    - Choose "Quick Create"
+    - Select shape: VM.Standard.A1.Flex (ARM - Always Free)
+    - Set 1 node, 2 OCPUs, 12GB RAM
+    - Click "Create"
+    - Wait for cluster to be Active (~10 minutes)
+
+  Step 3: Set up kubectl access
+  ------------------------------
+    - Click on your cluster > "Access Cluster"
+    - Follow the "Local Access" instructions
+    - Install OCI CLI if needed: https://docs.oracle.com/en-us/iaas/Content/API/SDKDocs/cliinstall.htm
+    - Run the provided oci command to generate kubeconfig
+
+  Step 4: Create a Container Registry (OCIR)
+  -------------------------------------------
+    - Navigate: Developer Services > Container Registry
+    - Create a repository named "panorai"
+    - Note your region code (e.g., iad for Ashburn)
+
+  Step 5: Build and push the Docker image
+  -----------------------------------------
+    NOTE: OKE free tier uses ARM nodes, so build for ARM:
+
+    docker buildx build --platform linux/arm64 -t <region>.ocir.io/<tenancy>/panorai:latest --push .
+
+    Example:
+    docker buildx build --platform linux/arm64 -t iad.ocir.io/mytenancy/panorai:latest --push .
+
+    (You need to docker login to OCIR first - see Oracle docs for auth token)
+
+  Step 6: Update deployment.yaml image
+  --------------------------------------
+    In k8s/deployment.yaml, change:
+      image: panorai:latest
+    To:
+      image: <region>.ocir.io/<tenancy>/panorai:latest
+
+    Also add imagePullSecrets if your registry is private.
+
+  Step 7: Deploy
+  ---------------
+    kubectl apply -f k8s/namespace.yaml
+    kubectl apply -f k8s/secret.yaml
+    kubectl apply -f k8s/deployment.yaml
+    kubectl apply -f k8s/service.yaml
+
+  Step 8: Get the external IP
+  ----------------------------
+    kubectl get svc -n panorai
+
+    The LoadBalancer will provision a public IP. Open it in your browser.
+
+
+========================================
+ OPTION D: GOOGLE CLOUD (GKE) - Free Trial
+========================================
+
+Google Cloud offers $300 free credits for 90 days.
+
+  Step 1: Create Google Cloud account at https://cloud.google.com/free
+  Step 2: Install gcloud CLI: https://cloud.google.com/sdk/docs/install
+  Step 3: Create a GKE Autopilot cluster:
+            gcloud container clusters create-auto panorai-cluster --region=us-central1
+  Step 4: Get credentials:
+            gcloud container clusters get-credentials panorai-cluster --region=us-central1
+  Step 5: Push image to Google Container Registry:
+            docker tag panorai:latest gcr.io/YOUR_PROJECT_ID/panorai:latest
+            docker push gcr.io/YOUR_PROJECT_ID/panorai:latest
+  Step 6: Update k8s/deployment.yaml image to gcr.io/YOUR_PROJECT_ID/panorai:latest
+  Step 7: Deploy with kubectl apply -f k8s/ commands as above
+
+
+========================================
+ COMMON TROUBLESHOOTING
+========================================
+
+  Problem: Pod stuck in "ImagePullBackOff"
+  Fix:     Image not found. For Minikube, make sure you ran "eval $(minikube docker-env)"
+           before "docker build". For cloud, make sure you pushed to the registry.
+           Also check: kubectl describe pod <pod-name> -n panorai
+
+  Problem: Pod stuck in "CrashLoopBackOff"
+  Fix:     App is crashing. Check logs:
+             kubectl logs -n panorai -l app=panorai --previous
+           Common cause: missing API keys in secret.yaml
+
+  Problem: Service EXTERNAL-IP shows <pending>
+  Fix:     On Minikube, use "minikube service" command instead.
+           On Docker Desktop, use port-forward.
+           On cloud, wait a few minutes for LoadBalancer provisioning.
+
+  Problem: "kubectl: command not found"
+  Fix:     Install kubectl:
+             Windows: winget install Kubernetes.kubectl
+             Mac:     brew install kubectl
+             Linux:   sudo snap install kubectl --classic
+
+  Problem: Health check failing (pod restarting)
+  Fix:     Make sure the /api/health endpoint exists in your app.
+           If it doesn't, remove the livenessProbe and readinessProbe
+           sections from k8s/deployment.yaml.
+
+
+========================================
+ QUICK REFERENCE - KUBECTL COMMANDS
+========================================
+
+  kubectl get pods -n panorai                    # List pods
+  kubectl get svc -n panorai                     # List services
+  kubectl logs -f -n panorai -l app=panorai      # Stream logs
+  kubectl describe pod <name> -n panorai         # Pod details
+  kubectl exec -it <pod-name> -n panorai -- sh   # Shell into pod
+  kubectl rollout restart deploy/panorai-app -n panorai  # Restart
+  kubectl scale deploy/panorai-app --replicas=2 -n panorai  # Scale up
+  kubectl delete namespace panorai               # Delete everything
+  kubectl top pods -n panorai                    # Resource usage
+
+===============================================================================

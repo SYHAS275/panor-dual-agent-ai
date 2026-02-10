@@ -1,0 +1,248 @@
+AI DOCUMENT ANALYZER - COMPLETE FOLDER STRUCTURE
+================================================
+
+ai-document-analyzer/
+│
+├── app/                                    # Next.js App Router directory
+│   ├── api/                               # API Routes
+│   │   ├── analyze/
+│   │   │   └── route.ts                   # POST /api/analyze - Main document analysis endpoint
+│   │   └── health/
+│   │       └── route.ts                   # GET /api/health - Health check endpoint
+│   │
+│   ├── globals.css                        # Global CSS styles with Tailwind directives
+│   ├── layout.tsx                         # Root layout with ThemeProvider
+│   └── page.tsx                           # Home page - main application UI
+│
+├── components/                            # React Components
+│   ├── FileUpload.tsx                     # File upload UI with drag-drop support
+│   ├── Header.tsx                         # Header with logo and dark mode toggle
+│   ├── ResponseDisplay.tsx                # Display AI responses in 3-column layout
+│   └── ThemeProvider.tsx                  # Next-themes provider wrapper
+│
+├── lib/                                   # Backend utilities and services
+│   ├── ai/                               # AI service integrations
+│   │   ├── geminiService.ts              # Google Gemini API integration
+│   │   ├── openaiService.ts              # OpenAI ChatGPT API integration
+│   │   └── index.ts                      # AI orchestration and coordination
+│   │
+│   ├── parsers/                          # File parsing utilities
+│   │   ├── pdfParser.ts                  # PDF text extraction (pdf-parse)
+│   │   ├── imageParser.ts                # Image OCR (Tesseract.js)
+│   │   ├── docxParser.ts                 # DOCX text extraction (mammoth)
+│   │   ├── textParser.ts                 # Plain text file reader
+│   │   └── index.ts                      # Parser orchestrator
+│   │
+│   ├── config.ts                         # Configuration management
+│   ├── fileUpload.ts                     # File upload handling (formidable)
+│   └── logger.ts                         # Winston logger configuration
+│
+├── public/                                # Static assets (auto-created by Next.js)
+│   └── (static files like favicon, images, etc.)
+│
+├── uploads/                               # Temporary file storage (created at runtime)
+│   └── (temporary uploaded files - auto-deleted after processing)
+│
+├── .env                                   # Environment variables (create from .env.example)
+├── .env.example                           # Environment variables template
+├── .gitignore                             # Git ignore rules
+├── next.config.js                         # Next.js configuration
+├── package.json                           # Project dependencies and scripts
+├── package-lock.json                      # Locked dependency versions
+├── postcss.config.js                      # PostCSS configuration for Tailwind
+├── tailwind.config.ts                     # Tailwind CSS configuration
+├── tsconfig.json                          # TypeScript configuration
+│
+├── ARCHITECTURE.md                        # System architecture documentation
+├── DEPLOYMENT.md                          # Deployment guide for various platforms
+├── FOLDER_STRUCTURE.txt                   # This file - complete project structure
+├── QUICKSTART.md                          # Quick start guide for developers
+├── README.md                              # Main documentation and setup guide
+├── SECURITY.md                            # Security best practices and guidelines
+└── TESTING.md                             # Testing guide and test cases
+
+
+LOG FILES (Generated at runtime)
+================================
+├── error.log                              # Error-level logs only
+├── combined.log                           # All application logs
+
+
+FILE DESCRIPTIONS
+=================
+
+ROOT LEVEL FILES
+----------------
+.env.example             - Template for environment variables with all required keys
+.gitignore              - Excludes node_modules, .env, build files from version control
+next.config.js          - Next.js config with API route settings
+package.json            - Dependencies: Next.js, React, AI SDKs, file parsers, etc.
+postcss.config.js       - PostCSS plugins for Tailwind CSS processing
+tailwind.config.ts      - Tailwind configuration with dark mode and custom theme
+tsconfig.json           - TypeScript compiler options and paths
+
+
+APP DIRECTORY (Next.js 14 App Router)
+--------------------------------------
+app/page.tsx            - Main page component with state management for upload/analysis flow
+app/layout.tsx          - Root layout with metadata, ThemeProvider, global styles
+app/globals.css         - Tailwind directives, custom scrollbar, animations, dark mode styles
+
+API ROUTES
+----------
+app/api/analyze/route.ts  - Handles file upload, text extraction, AI analysis, summarization
+app/api/health/route.ts   - Returns health status and configuration info
+
+
+COMPONENTS (Reusable React Components)
+---------------------------------------
+FileUpload.tsx          - Drag-drop file upload with react-dropzone, validation, question input
+Header.tsx              - App header with logo, title, and dark mode toggle button
+ResponseDisplay.tsx     - 3-column layout showing Gemini, ChatGPT, and summary responses
+ThemeProvider.tsx       - Wrapper for next-themes to enable dark mode support
+
+
+AI SERVICES LAYER
+-----------------
+lib/ai/geminiService.ts    - Google Gemini API integration with prompt formatting
+lib/ai/openaiService.ts    - OpenAI ChatGPT API integration and summarization logic
+lib/ai/index.ts            - Orchestrates both AI services in parallel, generates summary
+
+
+FILE PARSERS LAYER
+------------------
+lib/parsers/pdfParser.ts    - Extracts text from PDF files using pdf-parse library
+lib/parsers/imageParser.ts  - OCR for images (PNG, JPG) using Tesseract.js
+lib/parsers/docxParser.ts   - Extracts text from Word documents using mammoth
+lib/parsers/textParser.ts   - Reads plain text files with UTF-8 encoding
+lib/parsers/index.ts        - Routes to appropriate parser based on file extension
+
+
+UTILITIES
+---------
+lib/config.ts           - Centralized configuration: API keys, file limits, timeouts, models
+lib/fileUpload.ts       - Formidable configuration for multipart form data parsing
+lib/logger.ts           - Winston logger with file and console transports
+
+
+DOCUMENTATION FILES
+-------------------
+README.md               - Main documentation: features, installation, usage, API docs
+QUICKSTART.md           - 5-minute setup guide for quick start
+ARCHITECTURE.md         - Detailed system architecture and design decisions
+DEPLOYMENT.md           - Deployment guides for Vercel, AWS, Docker, etc.
+SECURITY.md             - Security best practices, API key management, input validation
+TESTING.md              - Testing guide with test cases and examples
+FOLDER_STRUCTURE.txt    - This file - complete project structure overview
+
+
+KEY DEPENDENCIES
+================
+
+Frontend:
+- next@^14.2.0                    - React framework with App Router
+- react@^18.3.1                   - UI library
+- react-dom@^18.3.1               - React DOM bindings
+- react-dropzone@^14.3.5          - Drag-and-drop file upload
+- next-themes@^0.4.4              - Dark mode support
+- tailwindcss@^3.4.17             - Utility-first CSS framework
+
+Backend:
+- formidable@^3.5.1               - Multipart form data parsing
+- pdf-parse@^1.1.1                - PDF text extraction
+- tesseract.js@^5.1.1             - OCR for images
+- mammoth@^1.8.0                  - DOCX text extraction
+- winston@^3.17.0                 - Logging library
+
+AI Services:
+- openai@^4.77.0                  - OpenAI API client
+- @google/generative-ai@^0.21.0   - Google Gemini API client
+
+Dev Dependencies:
+- typescript@^5.7.2               - TypeScript compiler
+- @types/node                     - Node.js type definitions
+- @types/react                    - React type definitions
+- autoprefixer@^10.4.20           - PostCSS plugin for Tailwind
+
+
+ENVIRONMENT VARIABLES
+=====================
+
+Required:
+- OPENAI_API_KEY                  - OpenAI API key (starts with sk-)
+- GEMINI_API_KEY                  - Google Gemini API key
+
+Optional:
+- NODE_ENV                        - Environment (development/production)
+- MAX_FILE_SIZE                   - Maximum file size in bytes (default: 10485760)
+- ALLOWED_FILE_TYPES              - Comma-separated list of allowed extensions
+- API_TIMEOUT                     - API request timeout in milliseconds (default: 60000)
+- RATE_LIMIT                      - Requests per minute (default: 10)
+
+
+DATA FLOW SUMMARY
+=================
+
+1. User uploads file via FileUpload component (app/page.tsx)
+2. FormData sent to POST /api/analyze (app/api/analyze/route.ts)
+3. File parsed by appropriate parser (lib/parsers/*.ts)
+4. Text extracted and sent to both AI services in parallel (lib/ai/index.ts)
+   - Gemini API (lib/ai/geminiService.ts)
+   - OpenAI API (lib/ai/openaiService.ts)
+5. Both responses sent to OpenAI for summarization
+6. All three responses returned to frontend
+7. ResponseDisplay shows results in 3-column layout
+8. Temporary file deleted from uploads/ directory
+
+
+SECURITY FEATURES
+=================
+
+✓ API keys stored in environment variables, never exposed to client
+✓ File type validation (whitelist: .pdf, .png, .jpg, .jpeg, .docx, .txt)
+✓ File size limits (default: 10MB)
+✓ Automatic file cleanup after processing
+✓ Input sanitization for questions
+✓ Error messages don't leak sensitive information
+✓ Structured logging with Winston (no sensitive data logged)
+✓ HTTPS recommended for production
+✓ Security headers configurable in next.config.js
+
+
+SCALABILITY NOTES
+=================
+
+Current: Single instance, local file storage
+Scale to: Multiple instances with:
+  - Shared file storage (AWS S3)
+  - Redis for session management and caching
+  - Load balancer (Nginx, AWS ALB)
+  - Database for user history (PostgreSQL, MongoDB)
+  - Queue system for background processing (Bull, RabbitMQ)
+
+
+BUILD COMMANDS
+==============
+
+npm install              - Install all dependencies
+npm run dev              - Start development server (http://localhost:3000)
+npm run build            - Build production bundle
+npm start                - Start production server
+npm run lint             - Run ESLint code linting
+
+
+DEPLOYMENT PLATFORMS
+====================
+
+✓ Vercel (Recommended)   - Automatic deployment from Git, zero config
+✓ Netlify                - Serverless deployment with CLI
+✓ AWS EC2                - Full control, manual setup with PM2 + Nginx
+✓ Docker                 - Containerized deployment
+✓ DigitalOcean           - App Platform or Droplet
+
+
+For detailed setup instructions, see README.md
+For deployment guides, see DEPLOYMENT.md
+For architecture details, see ARCHITECTURE.md
+For security guidelines, see SECURITY.md
+For testing procedures, see TESTING.md

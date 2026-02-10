@@ -1,0 +1,45 @@
+version: "3.8"
+
+services:
+  # NVIDIA Triton Inference Server
+  triton:
+    build:
+      context: ./triton
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"  # HTTP
+      - "8001:8001"  # gRPC
+      - "8002:8002"  # Metrics
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/v2/health/ready"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # PANOR.AI Next.js Application
+  panorai:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - TRITON_URL=http://triton:8000
+    depends_on:
+      triton:
+        condition: service_healthy
+    restart: unless-stopped
+
+# Note: This compose file requires:
+# 1. NVIDIA Docker runtime installed
+# 2. NVIDIA GPU with drivers
+# 3. Docker Compose v2.x with GPU support
