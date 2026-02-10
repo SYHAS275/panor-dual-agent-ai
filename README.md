@@ -14,20 +14,17 @@ A production-ready web application that analyzes documents using both Google Gem
 
 ## Screenshots
 
-### Login Page
-![Login Page](screenshots/homepage.png)
+### Dual AI Analysis
+![AI Analysis](screenshots/ai-analysis.png)
+
+### AI Analysis Response
+![AI Analysis Response](screenshots/ai-analysis-response.png)
 
 ### Face Detection
 ![Face Detection](screenshots/face-detection.png)
 
 ### Object Detection
 ![Object Detection](screenshots/object-detection.png)
-
-### Live Streaming
-![Live Streaming](screenshots/live-streaming.png)
-
-### Face Descriptor Generator
-![Face Descriptor Generator](screenshots/generate-descriptors.png)
 
 ## Tech Stack
 
